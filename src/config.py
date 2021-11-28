@@ -87,6 +87,10 @@ class Config:
         self.sorceress = dict(self._config["sorceress"])
         if "sorceress" in self._custom:
             self.sorceress.update(dict(self._custom["sorceress"]))
+            
+        self.coldfire = self._config["coldfire"]
+        if "coldfire" in self._custom:
+            self.coldfire.update(self._custom["coldfire"])             
 
         self.hammerdin = self._config["hammerdin"]
         if "hammerdin" in self._custom:

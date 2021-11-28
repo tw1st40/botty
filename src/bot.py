@@ -9,6 +9,7 @@ from belt_manager import BeltManager
 from pather import Pather, Location
 from logger import Logger
 from char.sorceress import Sorceress
+from char.coldfire import ColdFire
 from char.i_char import IChar
 from config import Config
 from health_manager import HealthManager
@@ -44,6 +45,8 @@ class Bot:
             self._char: IChar = Sorceress(self._config.sorceress, self._config.char, self._screen, self._template_finder, self._ui_manager, self._pather)
         elif self._config.char["type"] == "hammerdin":
             self._char: IChar = Hammerdin(self._config.hammerdin, self._config.char, self._screen, self._template_finder, self._ui_manager, self._pather)
+        elif self._config.char["type"] == "coldfire":
+            self._char: IChar = ColdFire(self._config.coldfire, self._config.char, self._screen, self._template_finder, self._ui_manager, self._pather)            
         else:
             Logger.error(f'{self._config.char["type"]} is not supported! Closing down bot.')
             os._exit(1)
