@@ -259,7 +259,7 @@ class Bot:
             self._curr_location = Location.PINDLE_START
             if not self._template_finder.search_and_wait(["PINDLE_0", "PINDLE_1"], threshold=0.65, time_out=20).valid:
                 return False
-            if not self._pre_buffed or bot._config.char["force_shenk_cta"]:
+            if not self._pre_buffed or self._config.char["force_pre_buff"]:
                 self._char.pre_buff()
                 self._pre_buffed = 1
             if self._config.char["static_path_pindle"]:
@@ -295,7 +295,7 @@ class Bot:
             self._curr_location = Location.ELDRITCH_START
             if not self._template_finder.search_and_wait(["ELDRITCH_0", "ELDRITCH_START"], threshold=0.65, time_out=20).valid:
                 return False
-            if not self._pre_buffed or bot._config.char["force_shenk_cta"]:
+            if not self._pre_buffed or self._config.char["force_pre_buff"]:
                 self._char.pre_buff()
                 self._pre_buffed = 1
             if self._config.char["static_path_eldritch"]:
