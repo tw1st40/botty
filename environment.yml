@@ -1,6 +1,7 @@
 name: botty
 dependencies:
   - python=3.9
+  - tesserocr
   - pip
   - pip:
     - pyinstaller
