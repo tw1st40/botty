@@ -107,20 +107,27 @@ if __name__ == "__main__":
     cropper = ItemCropper()
     screen = Screen(cropper._config.general["monitor"])
 
+    use_ocr = 0
+
     while 1:
         img = screen.grab().copy()
         res = cropper.crop(img)
         res_clean = cropper.clean_img(img)
+        start = time.time()
         with PyTessBaseAPI(psm=PSM.RAW_LINE, oem=OEM.LSTM_ONLY, path='assets/tessdata', lang='engd2r') as api:
             for cluster in res:
                 x, y, w, h = cluster.roi
                 cropped_img = res_clean[y:y+h, x:x+w]
-                api.SetImageBytes(*img_to_bytes(cropped_img))
-                ocr_text = api.GetUTF8Text().replace('\n', '')
-                text = f"{cluster.color_key}: {ocr_text}"
+                if use_ocr:
+                    api.SetImageBytes(*img_to_bytes(cropped_img))
+                    ocr_text = api.GetUTF8Text().replace('\n', '')
+                    text = f"{cluster.color_key}: {ocr_text}"
+                    cv2.putText(img, text, cluster.center, cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
                 cv2.circle(img, cluster.center, 5, (255, 0, 255), thickness=3)
                 cv2.rectangle(img, cluster.roi[:2], (cluster.roi[0] + cluster.roi[2], cluster.roi[1] + cluster.roi[3]), (0, 0, 255), 1)
-                cv2.putText(img, text, cluster.center, cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+        finish = time.time()
+        elapsed = finish - start
+        #print(f"Full image elapsed: {elapsed:.4f}s, use_ocr {use_ocr}")
         cv2.imshow('test', img)
         cv2.waitKey(1)
         #cv2.destroyAllWindows()
