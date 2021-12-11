@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from config import Config
-from utils.misc import color_filter, np_to_bitstream
+from utils.misc import color_filter, img_to_bytes
 from dataclasses import dataclass
 import time
 
@@ -113,6 +113,6 @@ if __name__ == "__main__":
             for cluster in res:
                 x, y, w, h = cluster.roi
                 cropped_img = res_clean[y:y+h, x:x+w]
-                api.SetImageBytes(*np_to_bitstream(cropped_img))
+                api.SetImageBytes(*img_to_bytes(cropped_img))
                 text = api.GetUTF8Text()
                 print(text)

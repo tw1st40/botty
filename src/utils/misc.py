@@ -88,7 +88,7 @@ def list_files_in_folder(path: str):
             r.append(os.path.join(root, name))
     return r
 
-def np_to_bitstream(image: np.ndarray, color: str = 'BGR'):
+def img_to_bytes(image: np.ndarray, color: str = 'BGR'):
     """ Sets an OpenCV-style image for recognition.
     https://github.com/sirfz/tesserocr/issues/198
 
