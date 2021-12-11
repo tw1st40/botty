@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from config import Config
-from utils.misc import color_filter
+from utils.misc import color_filter, img_to_bytes
 from dataclasses import dataclass
 import time
 
@@ -95,11 +95,11 @@ class ItemCropper:
         # print(debug_str)
         return item_clusters
 
-
 if __name__ == "__main__":
     import keyboard
     import os
     from screen import Screen
+    from tesserocr import PyTessBaseAPI, PSM, OEM
 
     keyboard.add_hotkey('f12', lambda: os._exit(1))
     cropper = ItemCropper()
@@ -108,8 +108,11 @@ if __name__ == "__main__":
     while 1:
         img = screen.grab().copy()
         res = cropper.crop(img)
-        for cluster in res:
-            x, y, w, h = cluster.roi
-            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 1)
-        cv2.imshow("res", img)
-        cv2.waitKey(1)
+        res_clean = cropper.clean_img(img)
+        with PyTessBaseAPI(psm=PSM.RAW_LINE, oem=OEM.LSTM_ONLY, path='assets/tessdata', lang='engd2r') as api:
+            for cluster in res:
+                x, y, w, h = cluster.roi
+                cropped_img = res_clean[y:y+h, x:x+w]
+                api.SetImageBytes(*img_to_bytes(cropped_img))
+                text = api.GetUTF8Text()
+                print(text)
