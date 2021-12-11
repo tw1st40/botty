@@ -1,1 +1,1 @@
-__version__ = 'mg-dev'
+__version__ = '0.4.4-dev'
