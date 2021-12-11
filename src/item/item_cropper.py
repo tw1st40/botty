@@ -4,7 +4,7 @@ from config import Config
 from utils.misc import color_filter, img_to_bytes
 from dataclasses import dataclass
 import time
-
+from typing import Tuple
 
 # TODO: With OCR we can then add a "text" field to this class
 @dataclass
@@ -12,6 +12,7 @@ class ItemText:
     color_key: str = None
     roi: list[int] = None
     data: np.ndarray = None
+    center: Tuple[float, float] = None # (x, y) in screen coordinates
 
 class ItemCropper:
     def __init__(self):
@@ -89,7 +90,8 @@ class ItemCropper:
                         item_clusters.append(ItemText(
                             color_key=self._item_colors[max_idx],
                             roi=[x, y, w, h],
-                            data=cropped_item
+                            data=cropped_item,
+                            center = (int(x + w * 0.5), int(y + h * 0.5))
                         ))
         debug_str += f" | cluster: {time.time() - start}"
         # print(debug_str)
@@ -114,5 +116,11 @@ if __name__ == "__main__":
                 x, y, w, h = cluster.roi
                 cropped_img = res_clean[y:y+h, x:x+w]
                 api.SetImageBytes(*img_to_bytes(cropped_img))
-                text = api.GetUTF8Text()
-                print(text)
+                ocr_text = api.GetUTF8Text().replace('\n', '')
+                text = f"{cluster.color_key}: {ocr_text}"
+                cv2.circle(img, cluster.center, 5, (255, 0, 255), thickness=3)
+                cv2.rectangle(img, cluster.roi[:2], (cluster.roi[0] + cluster.roi[2], cluster.roi[1] + cluster.roi[3]), (0, 0, 255), 1)
+                cv2.putText(img, text, cluster.center, cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+        cv2.imshow('test', img)
+        cv2.waitKey(1)
+        #cv2.destroyAllWindows()

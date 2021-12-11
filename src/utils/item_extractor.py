@@ -9,6 +9,7 @@ from config import Config
 from utils.misc import color_filter
 from item.item_cropper import ItemCropper
 import time
+import re
 
 
 if __name__ == "__main__":
@@ -41,7 +42,7 @@ if __name__ == "__main__":
                     print(f"{count} Input item name and press enter (converts to all caps)...")
                     item_name = input()
                     if item_name != "":
-                        out_filename = f"{key}_{item_name.replace(' ','_')}"
+                        out_filename = f"{key}_{re.sub('[^A-Za-z0-9 ]+', '', item_name).replace(' ','_')}"
                         if not os.path.exists(f"./ground_truth/{out_filename}.png"):
                             cv2.imwrite(f"./ground_truth/{out_filename}.png", img_clean[y:y+h, x:x+w])
                             file1 = open(f"./ground_truth/{out_filename}.gt.txt","w")
