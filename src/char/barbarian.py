@@ -35,7 +35,7 @@ class Barbarian(IChar):
         wait(0.05, 0.1)
         start = time.time()
         while (time.time() - start) < time_in_s:
-            wait(0.06, 0.08)
+            wait(0.12, 0.15)
             mouse.press(button="right")
             wait(0.5, 0.7)
             mouse.release(button="right")
@@ -43,35 +43,39 @@ class Barbarian(IChar):
         keyboard.send(self._char_config["stand_still"], do_press=False)
 
     def _do_hork(self, hork_time: int):
-        # Outburst's fine work below
-        # save current skill img
-        wait(0.1)
-        skill_before = cut_roi(self._screen.grab(), self._config.ui_roi["skill_right"])
-        wait(0.5)
-        keyboard.send(self._char_config["weapon_switch"])
-        wait(0.5)
+         # save current skill img
+         wait(0.1)
+         skill_before = cut_roi(self._screen.grab(), self._config.ui_roi["skill_right"])
+         wait(0.5)
+         keyboard.send(self._char_config["weapon_switch"])
+         wait(0.5)
         #hork
-        if self._skill_hotkeys["find_item"]:
+         if self._skill_hotkeys["find_item"]:
             keyboard.send(self._skill_hotkeys["find_item"])
             wait(0.5, 0.15)
-        mouse.move(637, 354)
-        wait(0.5, 0.15)
-        mouse.press(button="right")
-        wait(hork_time)
-        mouse.release(button="right")
-        wait(1)
-        keyboard.send(self._char_config["weapon_switch"])
-        wait(0.5, 0.15)
-        # Make sure that we are back at the previous skill
-        skill_after = cut_roi(self._screen.grab(), self._config.ui_roi["skill_right"])
-        _, max_val, _, _ = cv2.minMaxLoc(cv2.matchTemplate(skill_after, skill_before, cv2.TM_CCOEFF_NORMED))
-        if max_val < 0.96:
+         mouse.move(637, 354)
+         i = 0
+         while i <= hork_time:
+            wait(0.5, 0.15)
+            mouse.press(button="right")
+            wait(0.1)
+            mouse.release(button="right")
+            i += 1
+         wait(1)
+         keyboard.send(self._char_config["weapon_switch"])
+         wait(0.5, 0.15)
+         # Make sure that we are back at the previous skill
+         skill_after = cut_roi(self._screen.grab(), self._config.ui_roi["skill_right"])
+         _, max_val, _, _ = cv2.minMaxLoc(cv2.matchTemplate(skill_after, skill_before, cv2.TM_CCOEFF_NORMED))
+         if max_val < 0.96:
             Logger.warning("Failed to switch weapon, try again")
+            keyboard.send(self._char_config["weapon_switch"])
             wait(1.2)
             skill_after = cut_roi(self._screen.grab(), self._config.ui_roi["skill_right"])
             _, max_val, _, _ = cv2.minMaxLoc(cv2.matchTemplate(skill_after, skill_before, cv2.TM_CCOEFF_NORMED))
             if max_val < 0.96:
                 keyboard.send(self._char_config["weapon_switch"])
+                Logger.warning("Last try.")
                 wait(0.4)
             else:
                 Logger.warning("Turns out weapon switch just took a long time. You ever considered getting a new internet provider or to upgrade your pc?")
@@ -122,7 +126,7 @@ class Barbarian(IChar):
         self._pather.traverse_nodes((Location.A5_PINDLE_SAFE_DIST, Location.A5_PINDLE_END), self, time_out=0.1)
         self._cast_war_cry(self._char_config["atk_len_pindle"])
         wait(0.1, 0.15)
-        self._do_hork(4)
+        self._do_hork(6)
         return True
 
     def kill_eldritch(self) -> bool:
@@ -136,18 +140,20 @@ class Barbarian(IChar):
         wait(0.05, 0.1)
         self._cast_war_cry(self._char_config["atk_len_eldritch"])
         wait(0.1, 0.15)
-        self._do_hork(4)
+        self._do_hork(6)
         return True
 
     def kill_shenk(self):
+        atk_len = self._char_config["atk_len_shenk"] / 2
         # if not self._do_pre_move:
         #     keyboard.send(self._skill_hotkeys["concentration"])
         #     wait(0.05, 0.15)
         self._pather.traverse_nodes((Location.A5_SHENK_SAFE_DIST, Location.A5_SHENK_END), self, time_out=1.0, do_pre_move=self._do_pre_move)
         wait(0.05, 0.1)
-        self._cast_war_cry(self._char_config["atk_len_shenk"])
+        self._cast_war_cry(atk_len)
         wait(0.1, 0.15)
-        self._do_hork(7)
+        self._move_and_attack((-65, -30), atk_len)
+        self._do_hork(6)
         return True
 
     def kill_council(self) -> bool:
@@ -164,12 +170,17 @@ class Barbarian(IChar):
             self._pather.traverse_nodes([226], self, time_out=2.5, force_tp=True)
             self._cast_war_cry(atk_len)
             # move a bit to the top
-            self._move_and_attack((65, -30), atk_len)
+            # self._move_and_attack((65, -30), atk_len)
+            # move back inside and attack before horking
+            self._pather.traverse_nodes([228], self, time_out=2.5, force_tp=True)
+            self._cast_war_cry(atk_len)
         else:
             # Stay inside and cast war cry again moving forward
             self._move_and_attack((40, 10), atk_len)
             self._move_and_attack((-40, -20), atk_len)
-        self._do_hork(5)
+        self._do_hork(6)
+        # self._pather.traverse_nodes([229], self, time_out=2.5, force_tp=True)
+        # self._do_hork(5)
         return True
 
     def kill_nihlatak(self, end_nodes: list[int]) -> bool:
@@ -185,7 +196,7 @@ class Barbarian(IChar):
         self._move_and_attack((-30, -15), self._char_config["atk_len_nihlatak"] * 0.4)
         wait(0.1, 0.15)
         self._cast_war_cry(1.2)
-        self._do_hork(5)
+        self._do_hork(6)
         return True
 
 if __name__ == "__main__":
