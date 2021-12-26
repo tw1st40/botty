@@ -118,7 +118,17 @@ class IChar:
         wait(0.8, 1.3) # takes quite a while for tp to be visible
         roi = self._config.ui_roi["tp_search"]
         start = time.time()
-        while (time.time() - start)  < 8:
+        retry_count = 0
+        while (time.time() - start) < 8:
+            if time.time() - start > 3.7 and retry_count == 0:
+                retry_count += 1
+                Logger.debug("Move to another position and try to open tp again")
+                pos_m = self._screen.convert_abs_to_monitor((random.randint(-70, 70), random.randint(-70, 70)))
+                self.pre_move()
+                self.move(pos_m)
+                if self._ui_manager.has_tps():
+                    mouse.click(button="right")
+                wait(0.8, 1.3) # takes quite a while for tp to be visible
             img = self._screen.grab()
             template_match = self._template_finder.search(
                 ["BLUE_PORTAL","BLUE_PORTAL_2"],
@@ -161,12 +171,12 @@ class IChar:
         # Make sure that we are back at the previous skill
         skill_after = cut_roi(self._screen.grab(), self._config.ui_roi["skill_right"])
         _, max_val, _, _ = cv2.minMaxLoc(cv2.matchTemplate(skill_after, skill_before, cv2.TM_CCOEFF_NORMED))
-        if max_val < 0.96:
+        if max_val < 0.9:
             Logger.warning("Failed to switch weapon, try again")
             wait(1.2)
             skill_after = cut_roi(self._screen.grab(), self._config.ui_roi["skill_right"])
             _, max_val, _, _ = cv2.minMaxLoc(cv2.matchTemplate(skill_after, skill_before, cv2.TM_CCOEFF_NORMED))
-            if max_val < 0.96:
+            if max_val < 0.9:
                 keyboard.send(self._char_config["weapon_switch"])
                 wait(0.4)
             else:

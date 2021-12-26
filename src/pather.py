@@ -91,9 +91,9 @@ class Pather:
             104: {'PINDLE_4': (717, -117), 'PINDLE_3': (843, -244), 'PINDLE_5': (-187, 237), 'PINDLE_6': (-467, 89)}, 
             # Eldritch
             120: {'ELDRITCH_0': (293, 24), 'ELDRITCH_1': (-307, 76), 'ELDRITCH_5': (27, -164), 'ELDRITCH_6': (400, -50)},
-            121: {'ELDRITCH_6': (360, -244), 'ELDRITCH_1': (-329, -103), 'ELDRITCH_2': (411, 171), 'ELDRITCH_3': (-91, 198)},
-            122: {'ELDRITCH_2': (353, -145), 'ELDRITCH_3': (-149, -119)},
-            123: {'ELDRITCH_3': (-99, -252), 'ELDRITCH_2': (403, -279), 'ELDRITCH_4': (-62, -109)},
+            121: {'ELDRITCH_6': (360, -244), 'ELDRITCH_1': (-329, -103), 'ELDRITCH_2': (411, 171), 'ELDRITCH_3': (-91, 198), 'ELDRITCH_7': (409, 180), 'ELDRITCH_8': (465, 345)},
+            122: {'ELDRITCH_2': (353, -145), 'ELDRITCH_3': (-149, -119), 'ELDRITCH_9': (-253, -118), 'ELDRITCH_7': (352, -134), 'ELDRITCH_8': (404, 29)},
+            123: {'ELDRITCH_3': (-99, -252), 'ELDRITCH_2': (403, -279), 'ELDRITCH_4': (-62, -109), 'ELDRITCH_9': (-204, -254), 'ELDRITCH_8': (400, -267), 'ELDRITCH_8': (454, -104)},
             # Shenk
             141: {'SHENK_0': (-129, 44), 'SHENK_1': (464, 107), 'SHENK_2': (-167, -34), 'SHENK_17': (-520, 528), 'SHENK_15': (77, 293), 'SHENK_18': (518, 512)},
             142: {'SHENK_1': (584, 376), 'SHENK_4': (-443, -103), 'SHENK_2': (-52, 235), 'SHENK_3': (357, -129)},
@@ -104,6 +104,8 @@ class Pather:
             147: {'SHENK_16': (317, -18), 'SHENK_9': (-67, 139), 'SHENK_10': (-431, 67)},
             148: {'SHENK_16': (682, 103), 'SHENK_9': (301, 263), 'SHENK_10': (-65, 188), 'SHENK_11': (-306, 139)},
             149: {'SHENK_11': (261, 395), 'SHENK_10': (495, 421), 'SHENK_13': (393, -9)},
+            150: {"SHENK_RUN_6": (-80, -6), "SHENK_RUN_3": (-89, 5), "SHENK_RUN_4": (-16, -138), "SHENK_RUN_7": (-15, -144), "SHENK_RUN_8": (-193, -160)},
+            151: {"SHENK_RUN_8": (109, 88), "SHENK_RUN_7": (287, 104), "SHENK_RUN_4": (286, 110), "SHENK_RUN_6": (222, 242), "SHENK_RUN_3": (213, 253)},
             # A4 town
             160: {"A4_TOWN_4": (-100, -133), "A4_TOWN_3": (-117, 238), "A4_TOWN_0": (-364, 151), "A4_TOWN_6": (24, -425), "A4_TOWN_5": (-347, -277)},
             161: {"A4_TOWN_3": (-289, 156), "A4_TOWN_4": (-272, -215), "A4_TOWN_2": (385, -92), "A4_TOWN_6": (-148, -507), "A4_TOWN_0": (-536, 69)},
@@ -275,6 +277,16 @@ class Pather:
             new_range_y_bottom = self._screen.convert_screen_to_abs((0, self._config.ui_roi["mana_globe"][1]))[1]
             f = abs(new_range_y_bottom / float(abs_pos[1]))
             abs_pos = (int(abs_pos[0] * f), int(abs_pos[1] * f))
+        # Check if clicking on merc img
+        screen_pos = self._screen.convert_abs_to_screen(abs_pos)
+        if is_in_roi(self._config.ui_roi["merc_icon"], screen_pos):
+            width = self._config.ui_roi["merc_icon"][2]
+            height = self._config.ui_roi["merc_icon"][3]
+            w_abs, h_abs = self._screen.convert_screen_to_abs((width, height))
+            fw = abs(w_abs / float(abs_pos[0]))
+            fh = abs(h_abs / float(abs_pos[1]))
+            f = max(fw, fh)
+            abs_pos = (int(abs_pos[0] * f), int(abs_pos[1] * f))
         return abs_pos
 
     def find_abs_node_pos(self, node_idx: int, img: np.ndarray) -> Tuple[float, float]:
@@ -415,7 +427,7 @@ if __name__ == "__main__":
     keyboard.add_hotkey('f12', lambda: Logger.info('Force Exit (f12)') or os._exit(1))
     keyboard.wait("f11")
     from config import Config
-    from char.sorceress import Sorceress
+    from char.sorceress import LightSorc
     from char.hammerdin import Hammerdin
     from ui import UiManager
     config = Config()
@@ -423,7 +435,7 @@ if __name__ == "__main__":
     t_finder = TemplateFinder(screen)
     pather = Pather(screen, t_finder)
 
-    # display_all_nodes(pather, "NIL2D")
+    display_all_nodes(pather, "ELD")
 
     # # changing node pos and generating new code
     # code = ""
@@ -438,5 +450,4 @@ if __name__ == "__main__":
     ui_manager = UiManager(screen, t_finder)
     char = Hammerdin(config.hammerdin, config.char, screen, t_finder, ui_manager, pather)
     pather.traverse_nodes_fixed("trav_safe_dist", char)
-    print("-----")
     # pather.traverse_nodes([226, 228, 229], char)
